@@ -100,7 +100,6 @@ canvas.addEventListener("drawing-changed", function(drawEvent){
         for(const stroke of line){
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
         }
-        //drawLine(ctx, line[0].x, line[0].y, line[1].x, line[1].y);
     }
 
     if(currentLine.length > 0){
@@ -110,15 +109,8 @@ canvas.addEventListener("drawing-changed", function(drawEvent){
     }
 })
 
-clear.addEventListener("mousedown", () => {
-    lines = [];
-    currentLine = [];
-    canvas.dispatchEvent(drawEvent);
-});
-
 undoButton.addEventListener("mousedown", () => {
     if(lines.length > 0){
-        //recentLine = [];
         recentLine.push(lines.pop());
 
         canvas.dispatchEvent(drawEvent);
@@ -132,3 +124,9 @@ redoButton.addEventListener("mousedown", () => {
         canvas.dispatchEvent(drawEvent);
     }
 })
+
+clear.addEventListener("mousedown", () => {
+    lines = [];
+    currentLine = [];
+    canvas.dispatchEvent(drawEvent);
+});
