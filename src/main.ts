@@ -70,7 +70,6 @@ class Line {
         ctx.beginPath();
         ctx.strokeStyle = "black";
         ctx.lineWidth = this.stroke;
-        //ctx.lineWidth = 1;
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
         for(let i = 0; i < this.points.length; i++){
@@ -125,16 +124,6 @@ canvas.addEventListener("mouseout", () => {
         currentLine = null;
     }
 });
-
-/*function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number){
-    context.beginPath();
-    context.strokeStyle = "black";
-    context.lineWidth = 1;
-    context.moveTo(x1, y1);
-    context.lineTo(x2, y2);
-    context.stroke();
-    context.closePath();
-}*/
 
 canvas.addEventListener("drawing-changed", function(){
     ctx.fillRect(0, 0, 256, 256);
