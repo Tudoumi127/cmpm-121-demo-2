@@ -33,16 +33,9 @@ const clear = document.createElement("button");
 clear.innerHTML = "Clear Canvas";
 app.append(clear);
 
-//functions
+
 
 let drawing = false;
-/*let x = 0;
-let y = 0;
-
-let lines: {x: number; y: number; }[][][] = [];
-let currentLine: {x: number; y: number; }[][] = [];
-let currentStroke: {x: number; y: number; }[];
-let recentLine;*/
 
 let lines: Line[] = [];
 
@@ -85,9 +78,6 @@ canvas.addEventListener("mousedown", (pos) =>
 {
     drawing = true;
 
-    /*recentLine = [];
-
-    currentStroke= [{x:pos.offsetX, y:pos.offsetY}];*/
     redone.splice(0, redone.length);
     currentLine = new Line(pos.offsetX, pos.offsetY);
     lines.push(currentLine);
@@ -96,10 +86,6 @@ canvas.addEventListener("mousedown", (pos) =>
 canvas.addEventListener("mousemove", (pos) =>
 {
     if (drawing){
-        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
-        currentLine.push([...currentStroke]);
-
-        currentStroke.shift();*/
 
         if(currentLine){
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
@@ -113,12 +99,6 @@ canvas.addEventListener("mouseup", (pos) =>
 {
     if(drawing){
         drawing = false;
-
-        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
-        currentLine.push([...currentStroke]);
-
-        lines.push([...currentLine]);
-        currentLine = [];*/
 
         if(currentLine){
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
@@ -135,7 +115,7 @@ canvas.addEventListener("mouseout", () => {
     }
 });
 
-function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number){
+/*function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number){
     context.beginPath();
     context.strokeStyle = "black";
     context.lineWidth = 1;
@@ -143,22 +123,13 @@ function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2:
     context.lineTo(x2, y2);
     context.stroke();
     context.closePath();
-}
+}*/
 
 canvas.addEventListener("drawing-changed", function(){
     ctx.fillRect(0, 0, 256, 256);
     for(const line of lines){
-        /*for(const stroke of line){
-            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }*/
        line.display(ctx);
     }
-
-    /*if(currentLine.length > 0){
-        for(const stroke of currentLine){
-            drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }
-    }*/
 })
 
 undoButton.addEventListener("mousedown", () => {
