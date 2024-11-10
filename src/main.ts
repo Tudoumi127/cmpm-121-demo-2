@@ -36,15 +36,47 @@ app.append(clear);
 //functions
 
 let drawing = false;
-let x = 0;
+/*let x = 0;
 let y = 0;
 
 let lines: {x: number; y: number; }[][][] = [];
 let currentLine: {x: number; y: number; }[][] = [];
 let currentStroke: {x: number; y: number; }[];
-let recentLine;
+let recentLine;*/
+
+let lines: Line[] = [];
+
+const redone: Line[] = [];
+
+let currentLine: Line | null;
 
 const drawEvent = new CustomEvent("drawing-changed");
+
+class Line {
+    private points: {x: number; y: number;}[] = [];
+
+    constructor(startX: number, startY: number){
+        this.points.push({x: startX, y: startY});
+    }
+
+    mouseMove(x: number, y: number){
+        this.points.push({x, y});
+    }
+
+    display(ctx: CanvasRenderingContext2D) {
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+
+        for(let i = 0; i < this.points.length; i++){
+            ctx.lineTo(this.points[i].x, this.points[i].y);
+        }
+
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
 
 
 //event listeners
@@ -53,18 +85,26 @@ canvas.addEventListener("mousedown", (pos) =>
 {
     drawing = true;
 
-    recentLine = [];
+    /*recentLine = [];
 
-    currentStroke= [{x:pos.offsetX, y:pos.offsetY}];
+    currentStroke= [{x:pos.offsetX, y:pos.offsetY}];*/
+    redone.splice(0, redone.length);
+    currentLine = new Line(pos.offsetX, pos.offsetY);
+    lines.push(currentLine);
 });
 
 canvas.addEventListener("mousemove", (pos) =>
 {
     if (drawing){
-        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
 
-        currentStroke.shift();
+        currentStroke.shift();*/
+
+        if(currentLine){
+            currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
+
         canvas.dispatchEvent(drawEvent);
     }
 });
@@ -74,13 +114,24 @@ canvas.addEventListener("mouseup", (pos) =>
     if(drawing){
         drawing = false;
 
-        currentStroke.push({x:pos.offsetX, y:pos.offsetY});
+        /*currentStroke.push({x:pos.offsetX, y:pos.offsetY});
         currentLine.push([...currentStroke]);
 
         lines.push([...currentLine]);
-        currentLine = [];
+        currentLine = [];*/
+
+        if(currentLine){
+            currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
 
         canvas.dispatchEvent(drawEvent);
+    }
+});
+
+canvas.addEventListener("mouseout", () => {
+    if (drawing){
+        drawing = false;
+        currentLine = null;
     }
 });
 
@@ -94,39 +145,41 @@ function drawLine(context: CanvasRenderingContext2D, x1: number, y1: number, x2:
     context.closePath();
 }
 
-canvas.addEventListener("drawing-changed", function(drawEvent){
+canvas.addEventListener("drawing-changed", function(){
     ctx.fillRect(0, 0, 256, 256);
     for(const line of lines){
-        for(const stroke of line){
+        /*for(const stroke of line){
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
-        }
+        }*/
+       line.display(ctx);
     }
 
-    if(currentLine.length > 0){
+    /*if(currentLine.length > 0){
         for(const stroke of currentLine){
             drawLine(ctx, stroke[0].x, stroke[0].y, stroke[1].x, stroke[1].y);
         }
-    }
+    }*/
 })
 
 undoButton.addEventListener("mousedown", () => {
-    if(lines.length > 0){
-        recentLine.push(lines.pop());
-
+    const undo = lines.pop();
+    if(undo){
+        redone.push(undo);
         canvas.dispatchEvent(drawEvent);
     }
 })
 
 redoButton.addEventListener("mousedown", () => {
-    if(recentLine.length > 0) {
-        lines.push(recentLine.pop());
+    const redo = redone.pop();
+    if(redo){
+        lines.push(redo);
 
         canvas.dispatchEvent(drawEvent);
     }
 })
 
 clear.addEventListener("mousedown", () => {
-    lines = [];
-    currentLine = [];
+    lines.splice(0, lines.length);
+    currentLine = null;
     canvas.dispatchEvent(drawEvent);
 });
