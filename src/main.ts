@@ -33,23 +33,33 @@ const clear = document.createElement("button");
 clear.innerHTML = "Clear Canvas";
 app.append(clear);
 
+const thinpen = document.createElement("button");
+thinpen.innerHTML = "Thin Pen";
+app.append(thinpen);
+thinpen.className = "selected";
+
+const thickpen = document.createElement("button");
+thickpen.innerHTML = "Thick Pen";
+app.append(thickpen);
+thickpen.className = "not-selected";
+
 
 
 let drawing = false;
-
 let lines: Line[] = [];
-
 const redone: Line[] = [];
-
 let currentLine: Line | null;
+let strokeSize = 1;
 
 const drawEvent = new CustomEvent("drawing-changed");
 
 class Line {
     private points: {x: number; y: number;}[] = [];
+    private stroke: number;
 
     constructor(startX: number, startY: number){
         this.points.push({x: startX, y: startY});
+        this.stroke = strokeSize;
     }
 
     mouseMove(x: number, y: number){
@@ -59,7 +69,8 @@ class Line {
     display(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 1;
+        ctx.lineWidth = this.stroke;
+        //ctx.lineWidth = 1;
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
         for(let i = 0; i < this.points.length; i++){
@@ -131,6 +142,23 @@ canvas.addEventListener("drawing-changed", function(){
        line.display(ctx);
     }
 })
+
+thinpen.addEventListener("mousedown", () =>{
+    strokeSize = 1;
+    thinpen.classList.add("selected");
+    thinpen.classList.remove("not-selected");
+    thickpen.classList.add("not-selected");
+
+    thickpen.classList.remove("selected");
+});
+
+thickpen.addEventListener("mousedown", () =>{
+    strokeSize = 3;
+    thickpen.classList.add("selected");
+    thickpen.classList.remove("not-selected");
+    thinpen.classList.add("not-selected");
+    thinpen.classList.remove("selected");
+});
 
 undoButton.addEventListener("mousedown", () => {
     const undo = lines.pop();
