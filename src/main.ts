@@ -50,6 +50,7 @@ let lines: Line[] = [];
 const redone: Line[] = [];
 let currentLine: Line | null;
 let strokeSize = 1;
+
 const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 let cursor: Cursor | null;
@@ -128,7 +129,6 @@ canvas.addEventListener("mousemove", (pos) =>
 
     if(cursor){
         cursor.position(pos.offsetX, pos.offsetY);
-
         canvas.dispatchEvent(toolEvent);
     }
 });
@@ -155,7 +155,7 @@ canvas.addEventListener("mouseout", () => {
     canvas.dispatchEvent(drawEvent);
 });
 
-canvas.addEventListener("mousecenter", () => {
+canvas.addEventListener("mouseenter", () => {
     cursor = new Cursor(0,0);
 });
 
