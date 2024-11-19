@@ -46,7 +46,7 @@ thickpen.className = "not-selected";
 
 
 let drawing = false;
-let lines: Line[] = [];
+const lines: Line[] = [];
 const redone: Line[] = [];
 let currentLine: Line | null;
 let strokeSize = 1;
