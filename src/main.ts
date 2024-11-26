@@ -17,51 +17,73 @@ canvas.height = 256;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 ctx.fillStyle = "white";
 ctx.fillRect(0, 0, 256, 256);
-
+ctx.font = "32px monospace";
 
 app.append(canvas);
 
 const undoButton = document.createElement("button");
-undoButton.innerHTML = "Undo";
-app.append(undoButton);
+createButtons(undoButton, "Undo", false);
 
 const redoButton = document.createElement("button");
-redoButton.innerHTML = "Redo";
-app.append(redoButton);
+createButtons(redoButton, "Redo", false);
 
 const clear = document.createElement("button");
-clear.innerHTML = "Clear Canvas";
-app.append(clear);
+createButtons(clear, "Clear Canvas", false);
 
 const thinpen = document.createElement("button");
-thinpen.innerHTML = "Thin Pen";
-app.append(thinpen);
+createButtons(thinpen, "Thin Pen", true);
 thinpen.className = "selected";
 
 const thickpen = document.createElement("button");
-thickpen.innerHTML = "Thick Pen";
-app.append(thickpen);
-thickpen.className = "not-selected";
+createButtons(thickpen, "Thick Pen", true);
+//thickpen.className = "not-selected";
 
+const emote1 = document.createElement("button");
+createButtons(emote1, "🪭", true);
+emote1.addEventListener("click", () => stamp(emote1));
 
+const emote2 = document.createElement("button");
+createButtons(emote2, "🏮", true);
+emote2.addEventListener("click", () => stamp(emote2));
+
+const emote3 = document.createElement("button");
+createButtons(emote3, "🧧", true);
+emote3.addEventListener("click", () => stamp(emote3));
 
 let drawing = false;
 const lines: Line[] = [];
 const redone: Line[] = [];
 let currentLine: Line | null;
+let emoteButton: HTMLButtonElement | null;
+let currentEmo: placedStamp | null;
+const placedEmo: placedStamp[] = [];
 let strokeSize = 1;
+
+interface placedStamp{
+    shape: string;
+    x: number;
+    y: number;
+}
 
 const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 let cursor: Cursor | null;
+let emote: HTMLButtonElement | null;
 
 class Cursor{
     private x: number;
     private y: number;
+    public shape: string;
 
     constructor(x: number, y: number){
         this.x = x;
         this.y = y;
+        if(emoteButton){
+            this.shape = emoteButton.innerHTML;
+        }
+        else{
+            this.shape = "*";
+        }
     }
 
     position(x: number, y: number){
@@ -70,9 +92,16 @@ class Cursor{
     }
 
     draw(ctx: CanvasRenderingContext2D){
+        if(emoteButton){
+            this.shape = emoteButton.innerHTML;
+        }
+        else{
+            this.shape = "*";
+        }
+
         ctx.font = "32px monospace";
         ctx.fillStyle = 'black';
-        ctx.fillText("*", this.x - 8, this.y + 16);
+        ctx.fillText(this.shape, this.x - 8, this.y + 16);
     }
 }
 
@@ -104,6 +133,41 @@ class Line {
     }
 }
 
+//button functions
+function createButtons(button: HTMLButtonElement, value: string, brush: boolean){
+    button.innerHTML = value;
+    app.append(button);
+    if(button.innerHTML != "This" && brush){
+        button.className = "not-selected"
+    }
+}
+
+function stamp(button: HTMLButtonElement){
+    if(emoteButton){
+        changeClass(emoteButton);
+    }
+    emoteButton = button;
+    changeClass(button);
+    if(thinpen.className == "selected"){
+        changeClass(thinpen);
+    }
+    else if(thickpen.className == "selected"){
+        changeClass(thickpen);
+    }
+}
+
+function changeClass(button: HTMLButtonElement){
+    if(button.className == "not-selected"){
+        button.classList.add("selected");
+
+        button.classList.remove("not-selected");
+    }
+    else{
+        button.classList.add("not-selected");
+
+        button.classList.remove("selected");
+    }
+}
 
 //event listeners
 
@@ -112,22 +176,38 @@ canvas.addEventListener("mousedown", (pos) =>
     drawing = true;
 
     redone.splice(0, redone.length);
-    currentLine = new Line(pos.offsetX, pos.offsetY);
-    lines.push(currentLine);
+    /*currentLine = new Line(pos.offsetX, pos.offsetY);
+    lines.push(currentLine);*/
+    if(emoteButton){
+        currentEmo = {shape: emoteButton.innerHTML, x: pos.offsetX, y: pos.offsetY}
+        placedEmo.push(currentEmo);
+    }
+    else{
+        currentLine = new Line(pos.offsetX, pos.offsetY);
+        lines.push(currentLine);
+    }
 });
 
 canvas.addEventListener("mousemove", (pos) =>
 {
     if (drawing){
 
+        /*if(currentLine){
+            currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
+
+        canvas.dispatchEvent(drawEvent);*/
         if(currentLine){
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
+        }
+        if(emoteButton && currentEmo){
+            currentEmo.x = pos.offsetX;
+            currentEmo.y = pos.offsetY;
         }
 
         canvas.dispatchEvent(drawEvent);
     }
-
-    if(cursor){
+    else if(cursor){
         cursor.position(pos.offsetX, pos.offsetY);
         canvas.dispatchEvent(toolEvent);
     }
@@ -141,13 +221,16 @@ canvas.addEventListener("mouseup", (pos) =>
         if(currentLine){
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
         }
-
+        if(emoteButton && currentEmo){
+            currentEmo.x = pos.offsetX;
+            currentEmo.y = pos.offsetY;
+        }
         canvas.dispatchEvent(drawEvent);
     }
 });
 
 canvas.addEventListener("mouseout", () => {
-    if (drawing){
+    if (drawing || currentLine){
         drawing = false;
         currentLine = null;
     }
@@ -165,6 +248,11 @@ canvas.addEventListener("drawing-changed", function(){
     for(const line of lines){
        line.display(ctx);
     }
+    for(const emote of placedEmo){
+        ctx.font = "32px monospace";
+        ctx.fillStyle = "black";
+        ctx.fillText(emote.shape, emote.x - 8, emote.y + 16);
+    }
 })
 
 canvas.addEventListener("tool-moved", function(){
@@ -176,24 +264,40 @@ canvas.addEventListener("tool-moved", function(){
     }
 })
 
-thinpen.addEventListener("mousedown", () =>{
+thinpen.addEventListener("click", () =>{
     strokeSize = 1;
-    thinpen.classList.add("selected");
+    /*thinpen.classList.add("selected");
     thinpen.classList.remove("not-selected");
     thickpen.classList.add("not-selected");
 
-    thickpen.classList.remove("selected");
+    thickpen.classList.remove("selected");*/
+    changeClass(thinpen);
+    if(emoteButton){
+        changeClass(emoteButton);
+        emoteButton = null;
+    }
+    else{
+        changeClass(thickpen);
+    }
 });
 
-thickpen.addEventListener("mousedown", () =>{
+thickpen.addEventListener("click", () =>{
     strokeSize = 3;
-    thickpen.classList.add("selected");
+    /*thickpen.classList.add("selected");
     thickpen.classList.remove("not-selected");
     thinpen.classList.add("not-selected");
-    thinpen.classList.remove("selected");
+    thinpen.classList.remove("selected");*/
+    changeClass(thickpen);
+    if(emoteButton){
+        changeClass(emoteButton);
+        emoteButton = null;
+    }
+    else{
+        changeClass(thinpen);
+    }
 });
 
-undoButton.addEventListener("mousedown", () => {
+undoButton.addEventListener("click", () => {
     const undo = lines.pop();
     if(undo){
         redone.push(undo);
@@ -201,7 +305,7 @@ undoButton.addEventListener("mousedown", () => {
     }
 })
 
-redoButton.addEventListener("mousedown", () => {
+redoButton.addEventListener("click", () => {
     const redo = redone.pop();
     if(redo){
         lines.push(redo);
@@ -210,7 +314,7 @@ redoButton.addEventListener("mousedown", () => {
     }
 })
 
-clear.addEventListener("mousedown", () => {
+clear.addEventListener("click", () => {
     lines.splice(0, lines.length);
     currentLine = null;
     canvas.dispatchEvent(drawEvent);
