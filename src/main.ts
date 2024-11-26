@@ -176,8 +176,7 @@ canvas.addEventListener("mousedown", (pos) =>
     drawing = true;
 
     redone.splice(0, redone.length);
-    /*currentLine = new Line(pos.offsetX, pos.offsetY);
-    lines.push(currentLine);*/
+    
     if(emoteButton){
         currentEmo = {shape: emoteButton.innerHTML, x: pos.offsetX, y: pos.offsetY}
         placedEmo.push(currentEmo);
@@ -192,11 +191,6 @@ canvas.addEventListener("mousemove", (pos) =>
 {
     if (drawing){
 
-        /*if(currentLine){
-            currentLine.mouseMove(pos.offsetX, pos.offsetY);
-        }
-
-        canvas.dispatchEvent(drawEvent);*/
         if(currentLine){
             currentLine.mouseMove(pos.offsetX, pos.offsetY);
         }
@@ -266,11 +260,7 @@ canvas.addEventListener("tool-moved", function(){
 
 thinpen.addEventListener("click", () =>{
     strokeSize = 1;
-    /*thinpen.classList.add("selected");
-    thinpen.classList.remove("not-selected");
-    thickpen.classList.add("not-selected");
-
-    thickpen.classList.remove("selected");*/
+    
     changeClass(thinpen);
     if(emoteButton){
         changeClass(emoteButton);
@@ -283,10 +273,7 @@ thinpen.addEventListener("click", () =>{
 
 thickpen.addEventListener("click", () =>{
     strokeSize = 3;
-    /*thickpen.classList.add("selected");
-    thickpen.classList.remove("not-selected");
-    thinpen.classList.add("not-selected");
-    thinpen.classList.remove("selected");*/
+   
     changeClass(thickpen);
     if(emoteButton){
         changeClass(emoteButton);
