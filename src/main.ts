@@ -223,11 +223,10 @@ canvas.addEventListener("drawing-changed", function(){
     }
     for(const emote of placedEmo){
         ctx.save();
-        ctx.translate(emote.x, emote.y);
-        ctx.rotate(emote.rotation || 0);
-        ctx.font = "32px monospace";
-        ctx.fillStyle = "black";
-        ctx.fillText(emote.shape, emote.x - 8, emote.y + 16);
+        ctx.translate(emote.x, emote.y); 
+        ctx.rotate(emote.rotation || 0); 
+        ctx.fillStyle = 'black';
+        ctx.fillText(emote.shape, -8,16);
         ctx.restore();
     }
 })
