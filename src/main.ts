@@ -77,6 +77,51 @@ createButtons(emote3, "🧧", true, stamp);
 const customEmo = document.createElement("button");
 createButtons(customEmo, "Create Stamp", false);
 
+const slideCon = document.createElement("div");
+slideCon.className = "sliderContainer";
+const slider = document.createElement("input");
+slider.type = "range";
+slider.min = "0";
+slider.max = "1530";
+slider.value = "0";
+slider.className = "slider";
+slider.style.setProperty('--thumb-color', "rgb(255,0,0)");
+app.append(slideCon);
+slideCon.append(slider);
+let r: number = 255;
+let g: number = 0;
+let b: number = 0;
+slider.oninput = function() {
+    const val = Number(slider.value);
+    if(val < 255) {
+        r = 255;
+        g = val;
+        b = 0;
+    } else if (val < 510) {
+        r = 510 - val;
+        g = 255;
+        b = 0;
+    } else if (val < 765) {
+        r = 0;
+        g = 255;
+        b = val - 510; 
+    } else if (val < 1020) {
+        r = 0;
+        g = 1020 - val; 
+        b = 255;
+    } else if (val < 1275) {
+        r = val - 1020;
+        g = 0;
+        b = 255;
+    } else {
+        r = 255;
+        g = 0;
+        b = 1530 - val; 
+    }
+    color = `rgb(${r},${g},${b})`;
+    slider.style.setProperty('--thumb-color', color);
+  }
+
 
 let drawing = false;
 const lines: mark[] = [];
@@ -86,6 +131,7 @@ const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 
 let strokeSize = 2;
+let color = "rgb(255,0,0)";
 let cursor: Cursor | null;
 let emoteButton: HTMLButtonElement | null;
 let currentEmo: placedStamp | null;
@@ -112,10 +158,12 @@ interface Cursor{
 class Line {
     private points: {x: number; y: number;}[] = [];
     private stroke: number;
+    private strokeColor: string;
 
     constructor(startX: number, startY: number){
         this.points.push({x: startX, y: startY});
         this.stroke = strokeSize;
+        this.strokeColor = color;
     }
 
     mouseMove(x: number, y: number){
@@ -124,7 +172,7 @@ class Line {
 
     display(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = this.strokeColor;
         ctx.lineWidth = this.stroke;
         ctx.moveTo(this.points[0].x, this.points[0].y);
 
