@@ -48,8 +48,8 @@ const redoButton = document.createElement("button");
 createButtons(redoButton, "Redo", false);
 redoButton.addEventListener("click", () => undoRedo(redone, lines));
 
-const exportCanvas = document.createElement("button");
-createButtons(exportCanvas, "Export", false);
+const exportButton = document.createElement("button");
+createButtons(exportButton, "Export", false, exportCanvas);
 
 const clear = document.createElement("button");
 createButtons(clear, "Clear Canvas", false, cleared);
@@ -154,6 +154,22 @@ function createButtons(button: HTMLButtonElement, value: string, brush: boolean,
     }
 }
 
+function drawCanvasContent(ctxCan: CanvasRenderingContext2D, scale: number) {
+    ctxCan.fillStyle = 'white';
+    ctxCan.fillRect(0,0, 256, 256);
+    for (const line of lines) {
+        line.display(ctxCan);
+    }
+    for (const emote of placedEmo) {
+        ctxCan.save();
+        ctxCan.translate(emote.x, emote.y); 
+        ctxCan.rotate(emote.rotation || 0); 
+        ctxCan.fillStyle = 'black';
+        ctxCan.fillText(emote.shape, -8,16);
+        ctxCan.restore();
+    }
+}
+
 function stamp(button: HTMLButtonElement){
     if(emoteButton){
         changeClass(emoteButton);
@@ -218,6 +234,21 @@ function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
     ctx.fillText(cursor.shape, cursor.x - 8,cursor.y + 16);
 }
 
+function exportCanvas() {
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = 1024;
+    tempCanvas.height = 1024;
+    const tempCtx = tempCanvas.getContext("2d") as CanvasRenderingContext2D;;
+    tempCtx.scale(4,4);
+    tempCtx.font = "32px monospace";
+    drawCanvasContent(tempCtx, 4);
+    
+    const anchor = document.createElement("a");
+    anchor.href = tempCanvas.toDataURL("image/png");
+    anchor.download = "sketchpad.png";
+    anchor.click();
+}
+
 //event listeners
 
 canvas.addEventListener("mousedown", (pos) => {
@@ -278,19 +309,7 @@ canvas.addEventListener("mouseenter", () => {
 });
 
 canvas.addEventListener("drawing-changed", function(){
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 256, 256);
-    for(const line of lines){
-       line.display(ctx);
-    }
-    for(const emote of placedEmo){
-        ctx.save();
-        ctx.translate(emote.x, emote.y); 
-        ctx.rotate(emote.rotation || 0); 
-        ctx.fillStyle = 'black';
-        ctx.fillText(emote.shape, -8,16);
-        ctx.restore();
-    }
+    drawCanvasContent(ctx, 1);
 })
 
 canvas.addEventListener("tool-moved", function(){
