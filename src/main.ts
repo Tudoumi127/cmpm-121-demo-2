@@ -30,13 +30,13 @@ brushSettings.className = "column";
 container.append(brushSettings);
 
 const canvas = document.createElement("canvas");
-canvas.width = 256;
-canvas.height = 256;
+canvas.width = 500;
+canvas.height = 500;
 canvasCol.append(canvas);
 
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 ctx.fillStyle = "white";
-ctx.fillRect(0, 0, 256, 256);
+ctx.fillRect(0, 0, 500, 500);
 ctx.font = "32px monospace";
 
 // Buttons
@@ -57,11 +57,11 @@ createButtons(clear, "Clear Canvas", false, cleared);
 const thinpen = document.createElement("button");
 createButtons(thinpen, "Thin Pen", true);
 thinpen.className = "selected";
-thinpen.addEventListener("click", () => size(thinpen, thickpen, 1));
+thinpen.addEventListener("click", () => size(thinpen, thickpen, 2));
 
 const thickpen = document.createElement("button");
 createButtons(thickpen, "Thick Pen", true);
-thickpen.addEventListener("click", () => size(thickpen, thinpen, 3));
+thickpen.addEventListener("click", () => size(thickpen, thinpen, 5));
 
 //emotes
 
@@ -79,18 +79,22 @@ createButtons(customEmo, "Create Stamp", false);
 
 
 let drawing = false;
-const lines: Line[] = [];
-const redone: Line[] = [];
+const lines: mark[] = [];
+const redone: mark[] = [];
 let currentLine: Line | null;
 const drawEvent = new CustomEvent("drawing-changed");
 const toolEvent = new CustomEvent("tool-moved");
 
-let strokeSize = 1;
+let strokeSize = 2;
 let cursor: Cursor | null;
 let emoteButton: HTMLButtonElement | null;
 let currentEmo: placedStamp | null;
 let initialPos: {x: number, y: number};
-const placedEmo: placedStamp[] = [];
+
+interface mark {
+    line: Line | undefined;
+    stamp: placedStamp | undefined;
+}
 
 interface placedStamp{
     shape: string;
@@ -154,19 +158,21 @@ function createButtons(button: HTMLButtonElement, value: string, brush: boolean,
     }
 }
 
-function drawCanvasContent(ctxCan: CanvasRenderingContext2D, scale: number) {
+function drawCanvasContent(ctxCan: CanvasRenderingContext2D) {
     ctxCan.fillStyle = 'white';
-    ctxCan.fillRect(0,0, 256, 256);
-    for (const line of lines) {
-        line.display(ctxCan);
-    }
-    for (const emote of placedEmo) {
-        ctxCan.save();
-        ctxCan.translate(emote.x, emote.y); 
-        ctxCan.rotate(emote.rotation || 0); 
-        ctxCan.fillStyle = 'black';
-        ctxCan.fillText(emote.shape, -8,16);
-        ctxCan.restore();
+    ctxCan.fillRect(0,0, 500, 500);
+    for (const {line, stamp} of lines) {
+        if(line) {
+            line.display(ctxCan);
+        }
+        if(stamp) {
+            ctxCan.save();
+            ctxCan.translate(stamp.x, stamp.y); 
+            ctxCan.rotate(stamp.rotation || 0); 
+            ctxCan.fillStyle = 'black';
+            ctxCan.fillText(stamp.shape, -8,16);
+            ctxCan.restore();
+        }
     }
 }
 
@@ -203,7 +209,7 @@ function cleared(){
     canvas.dispatchEvent(drawEvent);
 }
 
-function undoRedo(remove: Array<Line>, add: Array<Line>){
+function undoRedo(remove: Array<mark>, add: Array<mark>){
     const removedLine = remove.pop();
     if(removedLine){
         add.push(removedLine);
@@ -212,14 +218,15 @@ function undoRedo(remove: Array<Line>, add: Array<Line>){
 }
 
 function size(newSize: HTMLButtonElement, oldSize: HTMLButtonElement, size: number){
-    strokeSize = size;
-    changeClass(newSize);
-    if(emoteButton){
-        changeClass(emoteButton);
-        emoteButton = null;
-    }
-    else{
-        changeClass(oldSize);
+    if(strokeSize != size || emoteButton) {
+        strokeSize = size;
+        changeClass(newSize);
+        if (emoteButton) {
+            changeClass(emoteButton);
+            emoteButton = null;
+        } else {
+            changeClass(oldSize);
+        }
     }
 }
 
@@ -236,12 +243,12 @@ function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
 
 function exportCanvas() {
     const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = 1024;
-    tempCanvas.height = 1024;
+    tempCanvas.width = 1200;
+    tempCanvas.height = 1200;
     const tempCtx = tempCanvas.getContext("2d") as CanvasRenderingContext2D;;
     tempCtx.scale(4,4);
     tempCtx.font = "32px monospace";
-    drawCanvasContent(tempCtx, 4);
+    drawCanvasContent(tempCtx);
     
     const anchor = document.createElement("a");
     anchor.href = tempCanvas.toDataURL("image/png");
@@ -257,11 +264,11 @@ canvas.addEventListener("mousedown", (pos) => {
 
     if (emoteButton) {
         currentEmo = {shape: emoteButton.innerHTML, x: pos.offsetX, y: pos.offsetY, rotation: 0}
-        placedEmo.push(currentEmo);
+        lines.push({line: undefined, stamp: currentEmo});
         initialPos = {x: pos.offsetX, y: pos.offsetY};
     } else {
         currentLine = new Line(pos.offsetX, pos.offsetY);
-        lines.push(currentLine);
+        lines.push({line: currentLine, stamp: undefined});
     }
 });
 
@@ -309,7 +316,7 @@ canvas.addEventListener("mouseenter", () => {
 });
 
 canvas.addEventListener("drawing-changed", function(){
-    drawCanvasContent(ctx, 1);
+    drawCanvasContent(ctx);
 })
 
 canvas.addEventListener("tool-moved", function(){
