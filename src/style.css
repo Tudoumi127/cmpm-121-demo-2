@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Courier New', Courier, monospace, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -77,7 +77,7 @@ button, .not-selected {
   background-color: #66ccff;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #0066ff;
 }
 button:focus,
 button:focus-visible {
@@ -87,7 +87,7 @@ button:focus-visible {
 canvas {
   border: 2px solid black;
   border-radius: 20px;
-  filter: drop-shadow(4px 4px 5px #0000);
+  filter: drop-shadow(5px 5px 5px, black);
 
   cursor: none;
 }
