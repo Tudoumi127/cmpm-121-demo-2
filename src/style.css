@@ -91,6 +91,11 @@ canvas {
 
   cursor: none;
 }
+.column{
+  display: felx;
+  flex: 0.5;
+  flex-direction: column;
+}
 
 @media (prefers-color-scheme: light) {
   :root {
