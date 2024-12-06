@@ -292,7 +292,7 @@ function draw(cursor: Cursor, ctx: CanvasRenderingContext2D) {
     cursor.shape = "*";
   }
 
-  ctx.fillStyle = "black";
+  ctx.fillStyle = color;
   ctx.fillText(cursor.shape, cursor.pos.x - 8, cursor.pos.y + 16);
 }
 
